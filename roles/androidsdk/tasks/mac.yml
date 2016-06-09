@@ -1,0 +1,35 @@
+---
+# Playbook in order to install Android-SDK in Mac
+
+- name: "Install python-pexpect using pip"
+  pip:
+    name: pexpect
+    state: present
+    extra_args: "--upgrade"
+
+- name: "Download and decompress Android-SDK from {{ mac_android_commandline_url }}"
+  unarchive: 
+    copy: no
+    src: "{{ mac_android_commandline_url }}"
+    dest: /opt/
+    force: yes
+    mode: 0775
+  ignore_errors: yes
+
+- name: "Show list of available packages"
+  shell: /opt/android-sdk-macosx/tools/android list sdk --all
+  register: list
+
+- debug: var=list.stdout_lines
+
+- name: "Install tools {{ android_tools_filter }}"
+  expect: 
+    command: ./android update sdk --filter {{ android_tools_filter }} --no-ui --force -a
+    chdir: /opt/android-sdk-macosx/tools/
+    responses:
+        '.*license.*': "y"
+    echo: yes
+    timeout: 300
+  register: out
+
+- debug: var=out

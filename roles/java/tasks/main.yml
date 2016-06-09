@@ -1,0 +1,10 @@
+- debug: var=ansible_distribution
+  
+- include: "ubuntu.yml"
+  when: ('Ubuntu' in ansible_distribution)
+
+- include: "windows.yml"
+  when: ('Windows' in ansible_distribution)
+
+- include: "mac.yml"
+  when: ('MacOSX' in ansible_distribution)

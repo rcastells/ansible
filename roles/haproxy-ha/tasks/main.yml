@@ -1,0 +1,83 @@
+---
+# file: roles/haproxy-ha/tasks/main.yml
+
+- name: Install basic packages
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+     - build-essential
+     - make
+     - g++
+     - libssl-dev
+     - keepalived
+     - libpcre3-dev
+
+- file: path=/opt/applications/ state=directory owner=root group=root mode=0755
+- file: path=/etc/haproxy/ state=directory owner=root group=root mode=0755
+
+- name: Unarchive HAProxy from {{ haproxy_url }} to /opt/applications/
+  unarchive: src={{ haproxy_url }} dest=/opt/applications/ copy=no
+
+- file: path=/opt/applications/haproxy src=/opt/applications/haproxy-{{ haproxy_version }}/ state=link
+
+- group: name=haproxy state=present
+- user: name=haproxy shell=/bin/false/ groups=haproxy
+
+- name: Run make command with TARGET=custom CPU=native USE_PCRE=1 USE_LIBCRYPT=1 USE_LINUX_SPLICE=1 USE_LINUX_TPROXY=1 USE_OPENSSL=yes
+  shell: make TARGET=custom CPU=native USE_PCRE=1 USE_LIBCRYPT=1 USE_LINUX_SPLICE=1 USE_LINUX_TPROXY=1 USE_OPENSSL=yes
+  args:
+     chdir: "/opt/applications/haproxy/"
+     executable: /bin/bash
+
+- name: Run make install command
+  shell: make install
+  args:
+     chdir: "/opt/applications/haproxy"
+     executable: /bin/bash
+
+- name: Start reading wildcard certificate
+  include_vars: vars/wildcard_beabloo.pem.yml.{{ environment }}
+
+- name: Copy wildcard certificate in /etc/ssl/private/
+  copy:
+     content: "{{ private_key_content }}"
+     dest: /etc/ssl/private/wildcard_beabloo.pem
+     owner: root
+     group: root
+     mode: 0600
+
+- file: path=/etc/haproxy/errors/ state=directory owner=root group=root mode=0644
+- file: path=/run/haproxy/ state=directory owner=root group=root mode=0755
+
+- name: Put 503.http file error in /etc/haproxy/errors
+  copy: src=files/503.http dest=/etc/haproxy/errors/503.http owner=root group=root mode=0644
+
+- name: Put configuration file in /etc/haproxy/
+  copy: src=files/haproxy.cfg.{{ environment }} dest=/etc/haproxy/haproxy.cfg owner=root group=root mode=0644
+  notify:
+     - restart haproxy
+  tags: config_haproxy
+
+- name: Add this option to /etc/sysctl.conf net.ipv4.ip_nonlocal_bind=1
+  lineinfile: dest=/etc/sysctl.conf line="net.ipv4.ip_nonlocal_bind=1" state=present
+
+- name: Put init script in /etc/init.d
+  copy: src=files/haproxy_init dest=/etc/init.d/haproxy owner=root group=root mode=0755
+
+- name: Configure HAProxy to start at boot
+  service: name=haproxy enabled=yes state=started
+
+- name: Put configuration file for keepalived
+  template: src=templates/keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf owner=root group=root mode=0644
+  notify:
+     - restart keepalived
+  tags: config_keepalived
+
+- name: Configure Keepalived to start at boot
+  service: name=keepalived enabled=yes state=started
+
+- file: path=/var/log/haproxy/ state=directory owner=syslog group=adm mode=0755
+
+- name: Put rsyslogd config file in /etc/rsyslog.d/
+  copy: src=files/49-haproxy.conf dest=/etc/rsyslog.d/49-haproxy.conf owner=root group=root mode=0644
+  notify:
+     - restart rsyslogd

@@ -1,0 +1,7 @@
+linux_android_commandline_url: "https://dl.google.com/android/android-sdk_r24.4.1-linux.tgz"
+win_android_studio_url: "https://dl.google.com/dl/android/studio/install/2.1.1.0/android-studio-bundle-143.2821654-windows.exe"
+win_android_commandline_url: "https://dl.google.com/android/android-sdk_r24.4.1-windows.zip"
+mac_homebrew_url: "https://raw.githubusercontent.com/Homebrew/install/master/install"
+mac_android_package_status: present
+mac_android_commandline_url: "https://dl.google.com/android/android-sdk_r24.4.1-macosx.zip"
+android_tools_filter: "1,2,3,5,37"

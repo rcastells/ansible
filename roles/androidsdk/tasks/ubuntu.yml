@@ -1,0 +1,55 @@
+---
+# Playbook in order to install Android-SDK in Ubuntu
+- name: "Be sure that some packages are installed"
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - "zip"
+    - "lib32z1"
+    - "lib32ncurses5"
+    - "lib32bz2-1.0"
+    - "lib32stdc++6"
+    - "python-pexpect"
+    - "python-pip"
+
+- name: "Install python-pexpect using pip"
+  pip:
+    name: pexpect
+    state: present
+    extra_args: "--upgrade"
+
+- name: "Download and decompress Android-SDK from {{ linux_android_commandline_url }}"
+  unarchive: 
+    copy: no
+    src: "{{ linux_android_commandline_url }}"
+    dest: /opt/
+    force: yes
+    mode: 0755
+
+- name: "Show list of available packages"
+  shell: /opt/android-sdk-linux/tools/android list sdk --all
+  register: list
+
+- debug: var=list.stdout_lines
+
+- name: "Install tools {{ android_tools_filter }}"
+  expect: 
+    command: ./android update sdk --filter {{ android_tools_filter }} --no-ui --force -a
+    chdir: /opt/android-sdk-linux/tools/
+    responses:
+        '.*license.*': "y"
+    echo: yes
+    timeout: 300
+
+- name: "Add new path into user environment"
+  lineinfile: 
+    dest: /etc/environment
+    regexp: ^PATH
+    line: PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/opt/android-sdk-linux/tools/:/opt/android-sdk-linux/platform-tools/"
+    state: present
+    mode: 0644
+    owner: root
+    group: root
+    backup: yes

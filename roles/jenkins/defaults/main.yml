@@ -1,0 +1,13 @@
+---
+jenkins_placeholder: 'placeholder'
+jenkins_port: 8080
+jenkins_plugins:
+  - 'ldap'
+  - 'github'
+  - 'translation'
+  - 'preSCMbuildstep'
+  - 'gravatar'
+jenkins_prefix: "/"
+jenkins_admin_user: admin
+# It must be in a vault file. But not done in order to do it easier. You can find this password in /var/lib/jenkins/secrets/initialAdminPassword
+jenkins_admin_password: df6658485d284e108dec51897c6be132

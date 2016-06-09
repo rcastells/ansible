@@ -1,0 +1,3 @@
+# Safe-restart Jenkins
+- name: Restart Jenkins
+  command: "{{ jenkins_cli_cmd }} safe-restart"

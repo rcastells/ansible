@@ -1,0 +1,10 @@
+---
+- name: Ensure jenkins running before requesting safe restart
+  service: name=jenkins state=started
+
+- name: Install plugins from host_vars
+  shell: "{{ jenkins_cli_cmd }} install-plugin {{ item }}"
+  with_items: "{{ jenkins_plugins }}"
+  ignore_errors: yes
+  notify:
+    - 'Restart Jenkins'

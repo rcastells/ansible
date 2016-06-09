@@ -1,0 +1,20 @@
+---
+
+- name: Create jenkins configuration for RedHat
+  file: path=/etc/sysconfig/jenkins state=touch
+
+- name: Configure Jenkins Port
+  lineinfile: dest=/etc/sysconfig/jenkins regexp=^JENKINS_PORT= line=JENKINS_PORT={{ jenkins_port }}
+  register: config_changed
+
+- name: Jenkins - configure | Turn off Jenkins setup wizard
+  lineinfile: dest=/etc/sysconfig/jenkins regexp='^JENKINS_JAVA_OPTIONS=' line='JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"'
+  register: config2_changed
+
+- name: Configure Jenkins Prefix
+  when: prefix is defined
+  lineinfile: dest=/etc/sysconfig/jenkins regexp=^PREFIX= line=PREFIX={{ jenkins_prefix }}
+
+- name: Restart jenkins now
+  service: name=jenkins state=restarted
+  when: config_changed.changed or config2_changed.changed

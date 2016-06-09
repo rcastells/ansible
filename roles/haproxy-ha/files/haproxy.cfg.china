@@ -1,0 +1,148 @@
+global
+	log 127.0.0.1	local0
+	log 127.0.0.1	local1 notice
+	log 127.0.0.1	local0 info
+        log-tag haproxy
+	maxconn 10000
+	chroot /etc/haproxy
+	user haproxy
+	group haproxy
+	daemon
+	#debug
+	#quiet
+
+	# Enable stats through socket in order to monitor HAProxy through Zabbix
+	stats socket /run/haproxy.sock mode 666 level user
+	stats timeout 2m
+
+	#Sets the maximum size of the Diffie-Hellman parameters used for generating the ephemeral/temporary Diffie-Hellman key in case of DHE key exchange
+	tune.ssl.default-dh-param 1024
+
+        # Disable SSLv3 everywhere
+        ssl-default-bind-options no-sslv3
+
+        # Default cipher list to use
+        # ssl-default-bind-ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK
+
+        ssl-default-bind-ciphers ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS
+
+        # Increase TLS session cache size and lifetime to avoid computing too many symmetric keys
+        tune.ssl.cachesize 100000
+        tune.ssl.lifetime 600
+
+        # Set up a TLS record to match a TCP segment size, in order to improve client side rendering of content:
+        tune.ssl.maxrecord 1460
+
+defaults
+	log	global
+
+	# Default mode: HTTP
+	mode	http
+	option	httplog
+	
+	# Reduces latency between HAProxy and users closing connections but maintaining keep-alives
+	option http-server-close
+
+	option	dontlognull
+	retries	3
+	option redispatch
+
+	# Max connections
+	maxconn	2000
+
+	# Timeouts
+	timeout connect	5000
+	timeout client	50000
+	timeout	server 50000
+
+listen stats 
+	bind 10.21.13.15:1936
+
+	# Stats configuration
+	stats hide-version
+	stats enable
+	stats auth username:password
+	stats uri /
+	stats refresh 30s
+
+frontend www-http-cms-web
+	bind 10.21.13.15:80
+
+        # Defining ACL 
+        acl is_web hdr(host) -i www.beabloo.cn
+        acl is_bi hdr(host) -i bi.beabloo.cn
+
+        # Configure which backend use depending on request
+        use_backend cms if is_web
+        use_backend bi if is_bi
+
+	# Default backend
+	default_backend cms
+
+        errorfile 503 /etc/haproxy/errors/503.http
+
+frontend www-8081
+	bind 10.21.13.15:8081
+
+	# Default backend
+	default_backend cms
+
+frontend www-remoteondemandserver
+	bind 10.21.13.7:2121
+
+	# Mode TCP instead of default HTTP
+	mode tcp
+
+	# TCPLOG instead of default HTTPLOG
+	option tcplog
+
+	# Default backend
+	default_backend remoteondemandserver
+
+frontend www-https-cms-web
+	bind 10.21.13.15:443 ssl crt /etc/ssl/private/wildcard_beabloo.pem
+
+	# Add X-Forward-For header
+	option forwardfor
+
+	# Defining ACL 
+	acl is_web hdr(host) -i www.beabloo.cn
+	acl is_bi hdr(host) -i bi.beabloo.cn
+
+	# Configure which backend use depending on request
+	use_backend cms if is_web
+	use_backend bi if is_bi
+
+	# Default backend
+	default_backend cms
+
+	# Errorfile for 503 http errors
+	errorfile 503 /etc/haproxy/errors/503.http
+
+backend cms
+	# HTTP CHECK to instances
+	option httpchk
+	# Persistence by COOKIE - 
+	cookie JSESSIONID prefix nocache
+	balance roundrobin
+	# The rise parameter sets the number of checks a server must pass to be declared operational.
+	# The fall parameter sets the number of checks a server must pass to be declared dead.
+	# The inter parameter sets the interval between these checks. Default is 2000 milliseconds.
+	server bb-cn1-ws01 10.21.13.1:80 check inter 2000 rise 2 fall 5 cookie bb-cn1-ws01
+	server bb-cn1-ws02 10.21.13.2:80 check inter 2000 rise 2 fall 5 cookie bb-cn1-ws02
+	server bb-cn1-ws03 10.21.13.3:80 check inter 2000 rise 2 fall 5 cookie bb-cn1-ws03
+	server bb-cn1-ws04 10.21.13.4:80 check inter 2000 rise 2 fall 5 cookie bb-cn1-ws04
+
+backend bi
+	option httpchk GET /pentaho/
+	cookie JSESSIONID prefix nocache
+	balance roundrobin
+        # The rise parameter sets the number of checks a server must pass to be declared operational.
+        # The fall parameter sets the number of checks a server must pass to be declared dead.
+        # The inter parameter sets the interval between these checks. Default is 2000 milliseconds.
+        server bb-cn1-bi01 10.21.14.5:443 check ssl verify none inter 2000 rise 2 fall 5 cookie bb-cn1-bi01
+        server bb-cn1-bi02 10.21.14.6:443 check ssl verify none inter 2000 rise 2 fall 5 cookie bb-cn1-bi02
+
+backend remoteondemandserver
+	option tcp-check
+	server remoteondemandserver 10.21.13.7:2121 check port 2121

@@ -1,0 +1,44 @@
+---
+# Playbook in order to install Android-SDK in Windows
+#- name: "Install commandline tools Android-SDK"
+#  win_get_url:
+#    url: "{{ win_android_commandline_url }}"
+#    dest: C:\applications\android_commandline.zip
+#    force: yes
+
+#- name: "Decompress commandline tools"
+#  win_unzip:
+#    src: C:\applications\android_commandline.zip
+#    dest: C:\applications\
+#    creates: C:\applications\android-sdk-windows
+
+#- name: "Show list of available packages"
+#  raw: C:\applications\android-sdk-windows\tools\android.bat list sdk --all
+#  register: list
+
+#- debug: var=list
+
+#- name: "Install Android-SDK"
+#  raw: Powershell -Command "& ECHO 'Y' | C:\applications\android-sdk-windows\tools\android.bat update sdk -u -a -f -t \"1,2,3,5,6,37\" "
+#  register: out
+
+#- name: "Install Android-SDK"
+#  script: files/installandroidsdk.ps1
+#  register: out
+
+#- debug: var=out
+
+#- name: "Install Android-SDK"
+#  raw: echo y | C:\applications\android-sdk-windows\tools\android.bat update sdk -s --no-ui -a -t "1,2,3,5,6,37"
+#  register: out
+
+#- debug: var=out
+
+- name: "Install Android-SDK"
+  win_chocolatey:
+    name: android-sdk
+    force: yes
+    state: present
+  register: out
+
+- debug: var=out
