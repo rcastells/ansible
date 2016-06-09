@@ -35,12 +35,12 @@
      executable: /bin/bash
 
 - name: Start reading wildcard certificate
-  include_vars: vars/wildcard_beabloo.pem.yml.{{ environment }}
+  include_vars: vars/wildcard.pem.yml
 
 - name: Copy wildcard certificate in /etc/ssl/private/
   copy:
      content: "{{ private_key_content }}"
-     dest: /etc/ssl/private/wildcard_beabloo.pem
+     dest: /etc/ssl/private/wildcard.pem
      owner: root
      group: root
      mode: 0600

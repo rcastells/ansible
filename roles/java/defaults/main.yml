@@ -1,7 +1,0 @@
-java_version: "8"
-java6_url: https://s3-eu-west-1.amazonaws.com/beabloo-opensource/java/jdk-6u45-linux-x64.tar.gz
-java7_url: https://s3-eu-west-1.amazonaws.com/beabloo-opensource/java/jdk-7u80-linux-x64.tar.gz
-java8_url: https://s3-eu-west-1.amazonaws.com/beabloo-opensource/java/jdk-8u66-linux-x64.tar.gz
-java7_win_url: https://s3-eu-west-1.amazonaws.com/beabloo-opensource/java/jdk-7u79-windows-x64.exe
-java8_win_url: https://s3-eu-west-1.amazonaws.com/beabloo-opensource/java/jdk-8u91-windows-x64.exe
-mac_java_package_status: present
