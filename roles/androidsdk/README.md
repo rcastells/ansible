@@ -68,28 +68,33 @@ ansible_winrm_server_cert_validation: ignore
 Remember to run the Powershell script [ConfigureRemotingForAnsible.ps1](https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1) on remote host before to run the playbook.
 
 Then run the playbook as follows:
-´´´
+```
 ansible-playbook -i <your_inventory> androidsdk.yml
-´´´
+```
+
 # MacOS
 
 In order to run the playbook for MacOSX you must have a user with SSH access to the server and sudo privileges to become root.
 
 Edit your inventory file and add mac server alias if necessary:
-´´´
+```
 mac ansible_host=<mac_host>
-´´´
+```
 Edit or create androidsdk.yml file and put mac host alias in host option as follows:
-´´´
+
+```
 --- 
 - hosts: mac
    roles:
      - androidsdk
-´´´
+```
+
 Then run the playbook as follows:
-´´´
+
+```
 ansible-playbook -i inventory/production androidsdk.yml -u <user> -b -K -k
-´´´
+```
+
 Notes:
 '-k' it will ask you for your password. You can avoid it if you are going to use ssh keys.
 '-u <user>' is the user you are going to use to connect to remote server. You can avoid it if you are going to use your current username.
@@ -97,7 +102,9 @@ Notes:
 '-K' it will ask you for sudo password. Mandatory if you need the password to become root.
 
 You can change which packages do you want to install by editing file roles/androidsdk/defaults/main.yml variable:
-´´´
+
+```
 android_tools_filter: "1,2,3,5,37"
-´´´
+```
+
 Also you could edit a variable for every host, so you can specify different packages for every host or group of hosts.
