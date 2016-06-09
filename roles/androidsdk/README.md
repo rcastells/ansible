@@ -5,8 +5,9 @@ This role allows you to install Android-SDK for Linux, Windows or Mac:
 In order to run the playbook for Ubuntu OS you must have a user with SSH access to the server and sudo privileges to become root.
 
 Edit your inventory file and add ubuntu server alias if necessary:
-
+```
 ubuntu ansible_host=<ubuntu_host>
+```
 Create your playbook file (for example androidsdk.yml) and add the ubuntu hosts:
 
 ```
