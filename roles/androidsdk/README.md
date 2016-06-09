@@ -1,6 +1,6 @@
 This role allows you to install Android-SDK for Linux, Windows or Mac:
 
-## Ubuntu OS
+# Ubuntu OS
 
 In order to run the playbook for Ubuntu OS you must have a user with SSH access to the server and sudo privileges to become root.
 
