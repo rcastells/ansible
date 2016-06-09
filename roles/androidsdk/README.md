@@ -9,13 +9,18 @@ Edit your inventory file and add ubuntu server alias if necessary:
 ubuntu ansible_host=<ubuntu_host>
 Create your playbook file (for example androidsdk.yml) and add the ubuntu hosts:
 
+```
 --- 
 - hosts: ubuntu
     roles:
      - androidsdk
+```
+
 Then run the playbook as follows:
 
+```
 ansible-playbook -i <your_inventory> androidsdk.yml -u <user> -b -K -k
+```
 Notes:
 '-k' it will ask you for your password. You can avoid it if you are going to use ssh keys.
 '-u <user>' is the user you are going to use to connect to remote server. You can avoid it if you are going to use your current username.
@@ -26,7 +31,10 @@ As you will see the playbook shows the list of available packages and by default
 
 You can change which packages do you want to install by editing file roles/androidsdk/defaults/main.yml variable:
 
+```
 android_tools_filter: "1,2,3,5,37"
+```
+
 Also you could edit a variable for every host, so you can specify different packages for every host or group of hosts.
 
 # WindowsOS
@@ -34,8 +42,9 @@ Also you could edit a variable for every host, so you can specify different pack
 In order to run the playbook for WindowsOS you must have credentials for an Admin account.
 
 Edit your inventory file and add ubuntu server alias if necessary:
-
+```
 windows ansible_host=<windows_host>
+```
 Edit or create the playbook file androidsdk.yml file and put windows host alias in host option as follows:
 
 --- 
