@@ -1,0 +1,4 @@
+---
+# Set default haproxy installation package if not defined at host_vars
+haproxy_url: http://www.haproxy.org/download/1.6/src/haproxy-1.6.7.tar.gz
+haproxy_version: 1.6.7

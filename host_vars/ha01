@@ -1,0 +1,6 @@
+keepalived_interval: 2
+keepalived_debug: 2
+keepalived_interface: eth0
+keepalived_MASTER_SLAVE: MASTER
+keepalived_priority: 101
+keepalived_virtualip: 172.31.39.157

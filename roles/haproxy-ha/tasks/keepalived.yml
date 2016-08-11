@@ -1,0 +1,17 @@
+---
+# Install and Configure keepalived
+
+- name: Install packages
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+    - keepalived
+
+- name: Put configuration file for keepalived
+  template: src=templates/keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf owner=root group=root mode=0644
+  notify:
+     - restart keepalived
+  tags: config_keepalived
+
+- name: Configure Keepalived to start at boot
+  service: name=keepalived enabled=yes state=started
+  

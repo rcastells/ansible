@@ -1,0 +1,9 @@
+---
+# HAProxy servers
+- hosts: webservers
+  become: yes
+
+- hosts: loadbalancers
+  become: yes
+  roles:
+    - haproxy-ha

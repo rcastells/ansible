@@ -1,0 +1,7 @@
+[loadbalancers]
+ha01 ansible_host=ec2-52-50-164-246.eu-west-1.compute.amazonaws.com
+ha02 ansible_host=ec2-52-48-101-228.eu-west-1.compute.amazonaws.com
+
+[webservers]
+web01 ansible_host=ec2-52-50-143-215.eu-west-1.compute.amazonaws.com
+web02 ansible_host=ec2-52-31-14-253.eu-west-1.compute.amazonaws.com
